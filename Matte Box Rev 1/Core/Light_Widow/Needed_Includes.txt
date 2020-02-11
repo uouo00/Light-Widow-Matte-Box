@@ -1,0 +1,9 @@
+../Core/Light_Widow/RFID_Common/inc
+../Core/Light_Widow/EPD/inc
+../Core/Light_Widow/24AA64_EEPROM/inc
+../Core/Light_Widow/Core
+../Core/Light_Widow/Gas_Gauge/inc
+../Core/Light_Widow/LM75B/inc
+../Core/Light_Widow/DataLogger/inc
+../Core/Light_Widow/RTC/inc
+../Middlewares/ST/RFAL/inc
