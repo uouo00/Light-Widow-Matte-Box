@@ -26,7 +26,7 @@ RfalPollerDevice        *gActiveDev;                             /* Active devic
  */
 static bool rfalPollerTechDetetection( void );
 static bool rfalPollerCollResolution( void );
-static bool copyUIDs(detectedTags_t *dTags);
+static bool copyUIDs(dTags_t *dTags);
 
 /*******************************************************************************
  * GLOBAL FUNCTIONS
@@ -46,7 +46,7 @@ void powerOffRFID( void ) {
 	st25r3916ClrRegisterBits( 0x02, (1 << 7));
 }
 
-void checkForTags(detectedTags_t *dTags) {
+void checkForTags(dTags_t *dTags) {
 	ReturnCode err;
 
 	do {
@@ -180,7 +180,7 @@ static bool rfalPollerCollResolution( void )
 }
 
 
-static bool copyUIDs(detectedTags_t *dTags) {
+static bool copyUIDs(dTags_t *dTags) {
 	for (uint8_t devCnt = 0; devCnt < gDevCnt; devCnt++) {
 		memcpy(dTags->TagUID[devCnt], gDevList[devCnt].dev.nfcv.InvRes.UID, RFAL_NFCV_UID_LEN);
 	}

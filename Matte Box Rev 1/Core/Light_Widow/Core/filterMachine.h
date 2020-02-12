@@ -13,31 +13,28 @@
 
 /********************************************************************************
  * DEFINES
- ******************************************************************************
- */
+ *******************************************************************************/
 #define NUM_FILTER_STAGES 			RFAL_POLLER_DEVICES		/* Defines the Number of different filter types */
 
 /********************************************************************************
  * TYPES
- ******************************************************************************
- */
+ *******************************************************************************/
 
 typedef struct {										/* Associates a UID to a Filter Name */
 	uint8_t filterName[10];
 	uint8_t filterTagUID[8];
 	uint8_t position;
-} filterStage_t;
+} filtStage_t;
 
 typedef struct {
 	uint8_t filterCount;
-	filterStage_t filter[NUM_FILTER_STAGES];
-} filterSection_t;
+	filtStage_t filter[NUM_FILTER_STAGES];
+} filtSection_t;
 
 
 /********************************************************************************
  * PROTOTYPES
- ******************************************************************************
- */
+ *******************************************************************************/
 
 /*!
  *****************************************************************************
@@ -53,7 +50,7 @@ typedef struct {
  * \returns nothing
  *****************************************************************************
  */
-bool updateFilterSet(detectedTags_t *dTag, filterSection_t *currentFilters);
+bool updateFilterSet(dTags_t *dTag, filtSection_t *currentFilters);
 
 /*!
  *****************************************************************************
@@ -68,7 +65,7 @@ bool updateFilterSet(detectedTags_t *dTag, filterSection_t *currentFilters);
  * \returns nothing
  *****************************************************************************
  */
-void loadFilterNames(filterSection_t *currentFilters);
+void loadFilterNames(filtSection_t *currentFilters);
 
 
 #endif // FILTER_MACHINE_H_

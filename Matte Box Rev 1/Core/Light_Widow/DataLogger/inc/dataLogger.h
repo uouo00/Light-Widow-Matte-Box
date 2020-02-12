@@ -16,13 +16,13 @@
  *******************************************************************************/
 #include <stdint.h>
 
-#include "filterMachine.h"
+#include "filter_controller.h"
+#include "process_controller.h"
 
 /******************************************************************************
  * DEFINES
  *******************************************************************************/
 #define TAG_UID_LEN			8U
-#define FILTER_NAME_LEN		10U
 /******************************************************************************
  * TYPES
  *******************************************************************************/
@@ -48,7 +48,7 @@ typedef struct {
 	// Date-time Stamp
 	datetime_record_t dateTimeStamp;
 	// Filter Names
-	filtername_record_t filterNames[NUM_FILTER_STAGES];
+	filtername_record_t filterNames[FILTER_SECTION_SIZE];
 } sdLog_record_t;
 
 typedef enum {

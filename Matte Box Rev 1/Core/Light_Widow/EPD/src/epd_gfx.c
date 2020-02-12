@@ -49,9 +49,9 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 	canvas_DrawStringAt(canvas, 10, 3, "FILTERS", &Font16, 1);
 
 	// Loop through all filter stages
-	for (uint8_t filterStage = 1; filterStage <= NUM_FILTER_STAGES; filterStage++){
+	for (uint8_t filterStage = 1; filterStage <= FILTER_SECTION_SIZE; filterStage++){
 		// Try to find a filter in the current position
-		for (uint8_t filter = 0; filter < NUM_FILTER_STAGES; filter++){
+		for (uint8_t filter = 0; filter < FILTER_SECTION_SIZE; filter++){
 			if (currentFilters->filter[filter].position == filterStage){
 				// Found a filter loaded in the current position
 				// Store the name into tmpName
@@ -70,7 +70,7 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 					// Find the starting Y pixel
 					uint8_t sectionHeight;
 					sectionHeight = epd->dots_per_line - 15;			// Account for the header
-					sectionHeight /= NUM_FILTER_STAGES;					// Account for the number of filters
+					sectionHeight /= FILTER_SECTION_SIZE;					// Account for the number of filters
 					startPixelY = sectionHeight * (filterStage - 1);  	// Get the correct section
 					startPixelY += sectionHeight / 2;					// Get to the center of the section
 					startPixelY -= 12;									// Account for the text height (assuming font24)
@@ -96,7 +96,7 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 					// Find the starting Y pixel
 					uint8_t sectionHeight;
 					sectionHeight = epd->dots_per_line - 15;			// Account for the header
-					sectionHeight /= NUM_FILTER_STAGES;					// Account for the number of filters
+					sectionHeight /= FILTER_SECTION_SIZE;					// Account for the number of filters
 					startPixelY = sectionHeight * (filterStage - 1);  	// Get the correct section
 					startPixelY += sectionHeight / 2;					// Get to the center of the section
 					startPixelY -= 24;									// Account for the text height (assuming font24)
@@ -122,7 +122,8 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 
 	// Right now, it just does a complete refresh - Need to change in the future
 	// Print the rendered image
-	if (refreshCount < 5){
+	if (refreshCount < CYCLES_UNTIL_REFRESH){
+		EPD_set_enable_temperature();
 		canvas_UpdateEPD(canvas, epd, prevImage);
 		refreshCount++;
 	} else {

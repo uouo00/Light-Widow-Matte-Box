@@ -9,6 +9,15 @@
 #ifndef _EPD_GFX_H
 #define _EPD_GFX_H
 
+#include "epd_g2.h"  // EPD V231_G2 Driver
+
+#include "fonts.h"
+#include "LW_Logo.h"
+
+#include "filter_controller.h"
+#include "process_controller.h"
+
+
 // Display orientation
 #define ROTATE_0            0
 #define ROTATE_90           1
@@ -18,12 +27,7 @@
 // Color inverse. 1 or 0 = set or reset a bit if set a colored pixel
 #define IF_INVERT_COLOR     0
 
-#include "epd_g2.h"  // EPD V231_G2 Driver
-
-#include "fonts.h"
-#include "LW_Logo.h"
-
-#include "filterMachine.h"
+#define CYCLES_UNTIL_REFRESH		6			/* The number of partial write cycles before a full refresh */
 
 typedef enum {           // error codes
 	CANVAS_OK,

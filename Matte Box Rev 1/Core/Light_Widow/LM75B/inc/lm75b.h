@@ -43,7 +43,7 @@ typedef enum {
 
 LM75B_error LM75B_Init(I2C_HandleTypeDef *hi2c, GPIO_TypeDef *Power_Port, uint16_t Power_Pin);
 
-int8_t LM75B_ReadTemp(void);
+LM75B_error LM75B_ReadTemp(int8_t *temp);
 
 
 #endif // LM75B_H

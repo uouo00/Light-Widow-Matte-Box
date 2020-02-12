@@ -25,19 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "LW_USB_CLI.h"
-#include "dataLogger.h"
-
-// E-Paper Display
-#include "epd_gfx.h"
-#include "dwt_delay.h"
-
-// Battery Gas Gauge
-#include "BQ27441.h"
-
-//// Temperature Sensor
-//#include "lm75b.h"
-
+#include "process_controller.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,19 +52,9 @@ SD_HandleTypeDef hsd;
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
-UART_HandleTypeDef huart1;
+//UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-
-///* EPD  ----------------------------------------------------------------------*/
-//EPD_HandleTypeDef epd1;					/* EPD Handle Type					  */
-//Canvas canvas1;							/* To Handle Writing an Image to EPD  */
-
-
-/* RFID ----------------------------------------------------------------------*/
-uint8_t globalCommProtectCnt;			/* RFID Interrupt Protection Counter  */
-detectedTags_t tagsFound;				/* Global Tag UID Holder 			  */
-
 
 /* USER CODE END PV */
 
@@ -87,10 +65,10 @@ static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
-static void MX_USART1_UART_Init(void);
+//static void MX_USART1_UART_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-void gotoSleep( void );
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -134,53 +112,10 @@ int main(void)
   MX_SPI2_Init();
 //  MX_USART1_UART_Init();
 //  MX_FATFS_Init();
-//  MX_USB_DEVICE_Init();
-//  MX_RTC_Init();
+  MX_USB_DEVICE_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-
-//  // Initialize the temperature sensor
-//  LM75B_Init(&hi2c1, AUX_POWER_GPIO_Port, AUX_POWER_Pin);
-
-//  // Initialize and Setup the E-Paper Display
-//  EPD_Init(EPD_2_0, &hspi2, &epd1);
-
-//  // Initialize the GFX Library for the EPD
-//  Canvas_Init(&canvas1, epd1.dots_per_line, epd1.lines_per_display);
-//  // Text rotation for a vertical display orientation
-//  canvas_SetRotate(&canvas1, ROTATE_90);
-
-//  // Clear the EPD
-//  EPD_begin(&epd1);
-//  EPD_clear(&epd1);
-//  EPD_end(&epd1);
-
-//  // Render a string of text to the buffer image
-//  canvas_setBGImage(&canvas1, image_background);
-//  canvas_DrawStringAt(&canvas1, 10, 3, "FILTERS", &Font16, 1);
-//  // Update the EPD with the new image
-//  canvas_PrintEPD(&canvas1, &epd1);
-
-//  // Initialize the Fuel Gauge
-//  BQ27441_Init(&hi2c1, &lipo1);
-//  // Setup the Fuel Gauge
-//  BQ27441_Setup(&lipo1);
-//
-//  HAL_GPIO_WritePin(SDIO_POWER_GPIO_Port, SDIO_POWER_Pin, GPIO_PIN_SET);
-//  HAL_Delay(5);
-
-//  // Test SD Card
-//  FatFsInit();
-//  dataLoggerInit();
-//
-//  rtcModuleInit(&hrtc);
-
-
-  HAL_GPIO_WritePin(RFID_POWER_GPIO_Port, RFID_POWER_Pin, GPIO_PIN_SET);
-  HAL_Delay(5);
-  spiInit(&hspi1);
-  rfidInit();
-
-
+  setupIOs();						/* Main Setup 			*/
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -190,10 +125,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  checkCliStatus();
-
-	  checkForTags(&tagsFound);
-	  HAL_Delay(1000);
+	  processIOs();					/* Main Process 		*/
   }
   /* USER CODE END 3 */
 }
@@ -453,33 +385,33 @@ static void MX_SPI2_Init(void)
   * @param None
   * @retval None
   */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
+//static void MX_USART1_UART_Init(void)
+//{
+//
+//  /* USER CODE BEGIN USART1_Init 0 */
+//
+//  /* USER CODE END USART1_Init 0 */
+//
+//  /* USER CODE BEGIN USART1_Init 1 */
+//
+//  /* USER CODE END USART1_Init 1 */
+//  huart1.Instance = USART1;
+//  huart1.Init.BaudRate = 115200;
+//  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+//  huart1.Init.StopBits = UART_STOPBITS_1;
+//  huart1.Init.Parity = UART_PARITY_NONE;
+//  huart1.Init.Mode = UART_MODE_TX_RX;
+//  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+//  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+//  if (HAL_UART_Init(&huart1) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
+//  /* USER CODE BEGIN USART1_Init 2 */
+//
+//  /* USER CODE END USART1_Init 2 */
+//
+//}
 
 /**
   * @brief GPIO Initialization Function
@@ -569,20 +501,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-void gotoSleep( void ) {
-	// Set SLEEPDEEP bit of Cortex System Control Register
-	SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-
-	// Select Power Down Deep Sleep
-	PWR->CR |= PWR_CR_PDDS;
-
-	// Clear the wakeup flag
-	PWR->CR |= PWR_CR_CWUF;
-
-	// Wait for Interrupt
-	__WFI();
-}
 
 /* USER CODE END 4 */
 

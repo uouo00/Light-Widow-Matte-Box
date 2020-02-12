@@ -63,6 +63,8 @@ static void border_dummy_line(EPD_HandleTypeDef *epd);
 static void SPI_send(EPD_HandleTypeDef *epd, uint8_t *pData, uint16_t Size);
 static void SPI_read(EPD_HandleTypeDef *epd, uint8_t *pTxData, uint8_t *pRxData, uint16_t Size);
 
+// Global Variables
+static bool setTemp = false;
 
 void EPD_Init(EPD_size size, SPI_HandleTypeDef *spi, EPD_HandleTypeDef *epd) {
 
@@ -161,7 +163,9 @@ void EPD_Init(EPD_size size, SPI_HandleTypeDef *spi, EPD_HandleTypeDef *epd) {
 
 	// an initial default temperature
 	epd->factored_stage_time = epd->base_stage_time;
-	EPD_set_temperature(epd, LM75B_ReadTemp());
+
+	// Set a base temperature
+	EPD_set_temperature(epd, 25);
 
 	// buffer for frame line
 	if (epd->middle_scan) {
@@ -195,10 +199,21 @@ EPD_error EPD_status(EPD_HandleTypeDef *epd) {
 
 // starts an EPD sequence
 void EPD_begin(EPD_HandleTypeDef *epd) {
+	int8_t currentTemperature;
 
 	// Nothing to do when COG still on
 	if (epd->COG_on) {
 		return;
+	}
+
+	if (setTemp) {
+		// setTemp flag is set from outside to prevent over-sampling
+		if (LM75B_ReadTemp(&currentTemperature) == LM75B_OK) {
+			EPD_set_temperature(epd, currentTemperature);
+		} else {
+			EPD_set_temperature(epd, 25);
+		}
+		setTemp = false;
 	}
 
 	// assume OK
@@ -402,6 +417,10 @@ static void power_off(EPD_HandleTypeDef *epd) {
 
 void EPD_set_temperature(EPD_HandleTypeDef *epd, int temperature) {
 	epd->factored_stage_time = epd->base_stage_time * temperature_to_factor_10x(temperature) / 10;
+}
+
+void EPD_set_enable_temperature(void){
+	setTemp = true;
 }
 
 //void EPD_set_factored_stage_time(EPD_type *epd, int pu_stagetime) {

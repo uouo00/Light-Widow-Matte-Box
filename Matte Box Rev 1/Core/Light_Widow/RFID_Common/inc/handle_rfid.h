@@ -83,7 +83,7 @@ union {
 typedef struct {												/* Global UID Storage                              */
 	uint8_t tagCount;
 	uint8_t TagUID[RFAL_POLLER_DEVICES][RFAL_NFCV_UID_LEN];
-} detectedTags_t;
+} dTags_t;
 
 /********************************************************************************
  * PROTOTYPES
@@ -91,6 +91,6 @@ typedef struct {												/* Global UID Storage                              *
  */
 void rfidInit(void);
 void powerOffRFID( void );
-void checkForTags(detectedTags_t *dTags);
+void checkForTags(dTags_t *dTags);
 
 #endif // HANDLE_RFID_H_

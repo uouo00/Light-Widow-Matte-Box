@@ -5,7 +5,7 @@
 #include "filterMachine.h"
 #include "24aa64_eep.h"
 
-bool updateFilterSet(detectedTags_t *dTag, filterSection_t *currentFilters){
+bool updateFilterSet(dTags_t *dTag, filtSection_t *currentFilters){
 
 	bool changeOccurred = false;
 	bool UIDMatched = false;
@@ -101,7 +101,7 @@ bool updateFilterSet(detectedTags_t *dTag, filterSection_t *currentFilters){
 
 }
 
-void loadFilterNames(filterSection_t *currentFilters){
+void loadFilterNames(filtSection_t *currentFilters){
 // Loop through each filter that is loaded, then load the filter name stored in eeprom
 
 	uint8_t tmpName[10] = {0};

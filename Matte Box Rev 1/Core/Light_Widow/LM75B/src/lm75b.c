@@ -61,19 +61,19 @@ LM75B_error LM75B_Init(I2C_HandleTypeDef *hi2c, GPIO_TypeDef *Power_Port, uint16
 	return LM75B_ERR;
 }
 
-int8_t LM75B_ReadTemp(void) {
+LM75B_error LM75B_ReadTemp(int8_t *temp) {
 	if (!LM75BInitialized) {
 		return LM75B_ERR;
 	}
 
 	HAL_GPIO_WritePin(LM75BPowerPort, LM75BPowerPin, GPIO_PIN_SET);
-	HAL_Delay(1); // Small delay to ensure stable power
+	HAL_Delay(10); // Small delay to ensure stable power
 
 	// Read the temperature register
 	uint8_t tempReg[2] = {0};
 	LM75B_i2cReadBytes(TEMP_REG, tempReg, 2);
 
-	// Shutdown power to conserve
+	// Shutdown to conserve power
 	HAL_GPIO_WritePin(LM75BPowerPort, LM75BPowerPin, GPIO_PIN_RESET);
 
 	// Convert Array into signed integer
@@ -87,10 +87,12 @@ int8_t LM75B_ReadTemp(void) {
 
 	if (checktemp & (1 << 7)) {
 		// We are negative, Strip the negative qualifier and send result
-		return (checktemp & (0x7F)) * -1;
+		*temp = (checktemp & (0x7F)) * -1;
 	} else {
-		return checktemp;
+		*temp = checktemp;
 	}
+
+	return LM75B_OK;
 }
 
 /********************************************************************************

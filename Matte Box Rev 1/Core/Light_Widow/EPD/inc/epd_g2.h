@@ -108,6 +108,9 @@ void EPD_Init(EPD_size size, SPI_HandleTypeDef *spi, EPD_HandleTypeDef *epd);
 // set the temperature compensation (call before begin)
 void EPD_set_temperature(EPD_HandleTypeDef *epd, int temperature);
 
+// external temperature enable
+void EPD_set_enable_temperature(void);
+
 // set factored_stage_time directly ('F' command)
 	//void EPD_set_factored_stage_time(EPD_type *epd, int pu_stagetime);
 
