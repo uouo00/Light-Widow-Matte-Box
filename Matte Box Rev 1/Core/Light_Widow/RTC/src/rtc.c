@@ -40,6 +40,10 @@ void rtcModuleInit(RTC_HandleTypeDef *hrtc) {
 	rtcModInit = true;
 }
 
+bool rtcModuleIsInit( void ) {
+	return rtcModInit;
+}
+
 RTC_error rtcSetTime(uint8_t hours, uint8_t minutes, uint8_t seconds) {
 	// Check If Module is Initialized
 	if (!rtcModInit) {

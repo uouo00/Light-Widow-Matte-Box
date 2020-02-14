@@ -52,16 +52,20 @@ typedef struct {
 } sdLog_record_t;
 
 typedef enum {
-	DATALOG_ERR,
 	DATALOG_OK,
+	DATALOG_ERR
 } DL_error;
 
 /******************************************************************************
  * PROTOTYPES
  *******************************************************************************/
-DL_error dataLoggerInit(void);
-DL_error logDataToSD(sdLog_record_t *sdLog);
+DL_error dataLoggerInit(GPIO_TypeDef* sd_Port, uint16_t sd_Pin);
+DL_error dataLoggerDeInit(void);
+DL_error startSDCard(void);
+DL_error stopSDCard(void);
 
+DL_error logDataToSD(sdLog_record_t *sdLog);
+DL_error SDDataLog(filterSection_t *fSection);
 
 DL_error dataLogTest(void);
 #endif // DATA_LOGGER_H

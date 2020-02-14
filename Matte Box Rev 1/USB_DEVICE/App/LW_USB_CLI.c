@@ -4,7 +4,7 @@
  *  Colton Crandell
  *  Light Widow 2020
  *
- *	Commands Look Like this:
+ *	Command List:
  *	setTime 12,00,00 (returns "OK")
  *	setDate 01,01,2020 (returns "OK")
  *	getDateTime (returns date and time -> "01/01/2020 12:00:00")

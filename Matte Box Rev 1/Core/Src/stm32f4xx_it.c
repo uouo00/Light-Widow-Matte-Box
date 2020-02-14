@@ -23,7 +23,10 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 #include "st25r3916/st25r3916_irq.h"
+#include "process_controller.h"			/* Used with ISR Flags		*/
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +65,7 @@ extern SD_HandleTypeDef hsd;
 extern SPI_HandleTypeDef hspi1;
 /* USER CODE BEGIN EV */
 
+extern uint8_t isr_flags;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -215,6 +219,38 @@ void EXTI4_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles EXTI line[9:5] interrupts.
+  */
+void EXTI9_5_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI9_5_IRQn 0 */
+	uint32_t irq5tickCnt;
+	static uint32_t irq5tickOffset = 0;
+	// Software Debounce
+	irq5tickCnt = HAL_GetTick();
+
+	if ((irq5tickCnt - irq5tickOffset) > 10) {
+		irq5tickOffset = irq5tickCnt;
+		// Service the SD Card Insert/Remove
+		if (HAL_GPIO_ReadPin(SD_DETECT_GPIO_Port, SD_DETECT_Pin) == GPIO_PIN_RESET) {
+			// The card has been inserted. Init FatFs/Logger.
+			isr_flags |= (isr_flags_t) INIT_FAT_FS;
+		} else {
+			// The card has been removed.  Deinit FatFs/Logger.
+			isr_flags |= (isr_flags_t) DEINIT_FAT_FS;
+		}
+	}
+
+  /* USER CODE END EXTI9_5_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
+
+  /* USER CODE END EXTI9_5_IRQn 1 */
+}
+
+/**
   * @brief This function handles SPI1 global interrupt.
   */
 void SPI1_IRQHandler(void)
@@ -226,6 +262,102 @@ void SPI1_IRQHandler(void)
   /* USER CODE BEGIN SPI1_IRQn 1 */
 
   /* USER CODE END SPI1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI line[15:10] interrupts.
+  */
+void EXTI15_10_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+	static uint32_t tickStart, tickEnd = 0; // Interval Tracking
+	static uint8_t btn1flag, btn2flag, btn3flag = 0;
+
+	// Check Pin States
+	if (HAL_GPIO_ReadPin(B_INPUT1_GPIO_Port, B_INPUT1_Pin) == GPIO_PIN_SET) {
+		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+		// Button 1 Initial Press
+		btn1flag = 1;
+		tickStart = HAL_GetTick();
+		tickEnd = tickStart;
+	}
+	if (HAL_GPIO_ReadPin(B_INPUT2_GPIO_Port, B_INPUT2_Pin) == GPIO_PIN_SET) {
+		// Button 2 Initial Press
+		btn2flag = 1;
+		tickStart = HAL_GetTick();
+		tickEnd = tickStart;
+	}
+	if (HAL_GPIO_ReadPin(B_INPUT3_GPIO_Port, B_INPUT3_Pin) == GPIO_PIN_SET) {
+		// Button 3 Initial Press
+		btn3flag = 1;
+		tickStart = HAL_GetTick();
+		tickEnd = tickStart;
+	}
+
+	if (btn1flag) {
+		if (HAL_GPIO_ReadPin(B_INPUT1_GPIO_Port, B_INPUT1_Pin) == GPIO_PIN_RESET) {
+			// Button 1 was released
+			tickEnd = HAL_GetTick();
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+		}
+	}
+	if (btn2flag) {
+		if (HAL_GPIO_ReadPin(B_INPUT2_GPIO_Port, B_INPUT2_Pin) == GPIO_PIN_RESET) {
+			// Button 2 was released
+			tickEnd = HAL_GetTick();
+		}
+	}
+	if (btn3flag) {
+		if (HAL_GPIO_ReadPin(B_INPUT3_GPIO_Port, B_INPUT3_Pin) == GPIO_PIN_RESET) {
+			// Button 3 was released
+			tickEnd = HAL_GetTick();
+		}
+	}
+
+	// Evaluate Results
+	if (tickEnd - tickStart > 0) {
+		// Avoid 1st event
+		if (tickEnd - tickStart <= 1000) {
+			// Short press
+			if (btn1flag) {
+				isr_flags |= (isr_flags_t) BTN_1_SH_PRESS;
+				btn1flag = 0;
+			}
+			if (btn2flag) {
+				isr_flags |= (isr_flags_t) BTN_2_SH_PRESS;
+				btn2flag = 0;
+			}
+			if (btn3flag) {
+				isr_flags |= (isr_flags_t) BTN_3_SH_PRESS;
+				btn3flag = 0;
+			}
+		}
+
+		if (HAL_GetTick() - tickStart > 1000) {
+			// Long press
+			if (btn1flag) {
+				isr_flags |= (isr_flags_t) BTN_1_LG_PRESS;
+				btn1flag = 0;
+			}
+			if (btn2flag) {
+				isr_flags |= (isr_flags_t) BTN_2_LG_PRESS;
+				btn2flag = 0;
+			}
+			if (btn3flag) {
+				isr_flags |= (isr_flags_t) BTN_3_LG_PRESS;
+				btn3flag = 0;
+			}
+		}
+	}
+
+
+  /* USER CODE END EXTI15_10_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
+  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
+
+  /* USER CODE END EXTI15_10_IRQn 1 */
 }
 
 /**

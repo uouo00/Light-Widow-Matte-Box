@@ -20,6 +20,7 @@
 #include "fatfs.h"
 
 #include "rtc.h"
+#include "filter_controller.h"
 
 /******************************************************************************
  * DEFINES
@@ -31,7 +32,12 @@
 /******************************************************************************
  * MODULAR VARIABLES
  *******************************************************************************/
+extern RTC_HandleTypeDef hrtc;
+
 static bool dlModInit = false;
+
+static GPIO_TypeDef* sdPowerPort = NULL;
+static uint16_t sdPowerPin;
 
 /******************************************************************************
  * PRIVATE FUNCTIONS
@@ -56,10 +62,24 @@ bool isLogDirValid(void) {
 /********************************************************************************
  * PUBLIC FUNCTIONS
  *******************************************************************************/
-DL_error dataLoggerInit(void) {
+
+DL_error dataLoggerInit(GPIO_TypeDef* sd_Port, uint16_t sd_Pin) {
 	DL_error retVal = DATALOG_ERR;
 
-	// TODO - Verify RTC Initialization here
+	// Check RTC. Initialize if needed.
+	if (!rtcModuleIsInit()) {
+		rtcModuleInit(&hrtc);
+	}
+
+	//Bind GPIO Port and Pin
+	if (sdPowerPort == NULL) {
+		sdPowerPort = sd_Port;
+		sdPowerPin = sd_Pin;
+	}
+
+	if (startSDCard() != DATALOG_OK) {
+		return DATALOG_ERR;
+	}
 
 	// Verify that FatFs is initialized
 	if (FatFsIsModuleInit()) {
@@ -82,6 +102,36 @@ DL_error dataLoggerInit(void) {
 
 	dlModInit = true;
 	return retVal;
+}
+
+DL_error dataLoggerDeInit(void) {
+	dlModInit = false;
+	return stopSDCard();
+}
+
+DL_error startSDCard(void) {
+	// See if a card is installed
+	if (HAL_GPIO_ReadPin(SD_DETECT_GPIO_Port, SD_DETECT_Pin) == GPIO_PIN_SET){
+		// No card is installed.
+		return DATALOG_ERR;
+	}
+
+	HAL_GPIO_WritePin(sdPowerPort, sdPowerPin, GPIO_PIN_SET);
+	HAL_Delay(5);
+	DL_error ret = FatFsInit();
+
+	// If there is a problem with the FatFs, turn off the power.
+	if (ret != DATALOG_OK) {
+		HAL_GPIO_WritePin(sdPowerPort, sdPowerPin, GPIO_PIN_RESET);
+	}
+	return ret;
+}
+
+DL_error stopSDCard(void) {
+	// Unlink the FatFs and turn off the SD Card
+	DL_error ret = FatFsDeInit();
+	HAL_GPIO_WritePin(sdPowerPort, sdPowerPin, GPIO_PIN_RESET);
+	return ret;
 }
 
 /*	This function get's called from the FilterMachine whenever there's
@@ -181,6 +231,40 @@ DL_error logDataToSD(sdLog_record_t *sdLog) {
 		}
 	}
 	return DATALOG_ERR;
+}
+
+DL_error SDDataLog(filterSection_t *fSection) {
+	RTC_DateTypeDef dateStamp;
+	RTC_TimeTypeDef timeStamp;
+	sdLog_record_t sdLog = {0};
+
+	if (!dlModInit) {
+		return DATALOG_ERR;
+	}
+
+	// See if FATFS and SD Card are ready
+
+
+	strcpy(sdLog.matteBoxID, MATTE_BOX_HW_ID);
+
+	// Get the Time and Store it
+	rtcGetDateTime(&dateStamp, &timeStamp);
+
+	// Load the DateTime results into the DataLog structure
+	sdLog.dateTimeStamp.month = dateStamp.Month;
+	sdLog.dateTimeStamp.day = dateStamp.Date;
+	sdLog.dateTimeStamp.year = dateStamp.Year + 2000;
+
+	sdLog.dateTimeStamp.hours = timeStamp.Hours;
+	sdLog.dateTimeStamp.minutes = timeStamp.Minutes;
+	sdLog.dateTimeStamp.seconds = timeStamp.Seconds;
+
+	for (uint8_t i = 0; i < FILTER_SECTION_SIZE; i++) {
+		strcpy(&sdLog.filterNames[i].filterName, fSection->filter[i].filterName);
+	}
+
+	// Log to the SD Card
+	return logDataToSD(&sdLog);
 }
 
 DL_error dataLogTest(void) {

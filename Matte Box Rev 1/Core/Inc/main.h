@@ -91,14 +91,18 @@ void Error_Handler(void);
 #define LED2_GPIO_Port GPIOB
 #define B_INPUT1_Pin GPIO_PIN_12
 #define B_INPUT1_GPIO_Port GPIOB
+#define B_INPUT1_EXTI_IRQn EXTI15_10_IRQn
 #define B_INPUT2_Pin GPIO_PIN_13
 #define B_INPUT2_GPIO_Port GPIOB
+#define B_INPUT2_EXTI_IRQn EXTI15_10_IRQn
 #define B_INPUT3_Pin GPIO_PIN_14
 #define B_INPUT3_GPIO_Port GPIOB
+#define B_INPUT3_EXTI_IRQn EXTI15_10_IRQn
 #define SDIO_POWER_Pin GPIO_PIN_6
 #define SDIO_POWER_GPIO_Port GPIOC
 #define SD_DETECT_Pin GPIO_PIN_7
 #define SD_DETECT_GPIO_Port GPIOC
+#define SD_DETECT_EXTI_IRQn EXTI9_5_IRQn
 #define USB_RENUM_Pin GPIO_PIN_8
 #define USB_RENUM_GPIO_Port GPIOA
 #define TC_SIGNAL_Pin GPIO_PIN_4
@@ -111,8 +115,10 @@ void Error_Handler(void);
 #define AUX_I2C_SDA_GPIO_Port GPIOB
 #define TEMP_IRQ_Pin GPIO_PIN_8
 #define TEMP_IRQ_GPIO_Port GPIOB
+#define TEMP_IRQ_EXTI_IRQn EXTI9_5_IRQn
 #define LOW_BAT_IRQ_Pin GPIO_PIN_9
 #define LOW_BAT_IRQ_GPIO_Port GPIOB
+#define LOW_BAT_IRQ_EXTI_IRQn EXTI9_5_IRQn
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

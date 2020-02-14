@@ -54,7 +54,6 @@ DWORD get_fattime(void)
 
 /* USER CODE BEGIN Application */
      
-
 SD_error FatFsInit(void) {
 	// Initializing Fat Filesystem
 	if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0) {
@@ -74,6 +73,11 @@ SD_error FatFsInit(void) {
 		return SD_ERR;
 	}
 	return SD_OK;
+}
+
+SD_error FatFsDeInit(void) {
+	fatFsModInit = false;
+	return FATFS_UnLinkDriver(SDPath);
 }
 
 

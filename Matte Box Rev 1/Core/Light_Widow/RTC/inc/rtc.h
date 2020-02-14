@@ -26,16 +26,16 @@
  * TYPES
  *******************************************************************************/
 
-
 typedef enum {
-	RTC_ERR,
 	RTC_OK,
+	RTC_ERR
 } RTC_error;
 /******************************************************************************
  * PROTOTYPES
  *******************************************************************************/
 
 void rtcModuleInit(RTC_HandleTypeDef *hrtc);
+bool rtcModuleIsInit( void );
 
 RTC_error rtcSetTime(uint8_t hours, uint8_t minutes, uint8_t seconds);
 RTC_error rtcSetDate(uint8_t month, uint8_t day, uint16_t year, uint8_t weekDay);

@@ -31,8 +31,8 @@
 #include <stdbool.h>
 
  typedef enum {
-	 SD_ERR,
 	 SD_OK,
+	 SD_ERR,
  } SD_error;
 
 /* USER CODE END Includes */
@@ -46,6 +46,7 @@ void MX_FATFS_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 SD_error FatFsInit(void);
+SD_error FatFsDeInit(void);
 SD_error FatFsReMake(void);
 bool FatFsIsModuleInit(void) ;
 
