@@ -43,7 +43,7 @@ typedef struct Canvas_t {
 } Canvas;
 
 Canvas_error Canvas_Init(Canvas* canvas, uint16_t width, uint16_t height);
-void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t *currentFilters);
+void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t *currentFilters, uint8_t invPosition);
 
 void canvas_SetRotate(Canvas* canvas, uint8_t rotate);
 

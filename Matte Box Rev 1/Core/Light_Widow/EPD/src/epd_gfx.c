@@ -1,3 +1,10 @@
+/*
+ * epd_gfx.c
+ *
+ * Created on: 11-17-19
+ *      Author: Colton Crandell
+ */
+
 
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +13,17 @@
 #include "epd_g2.h"
 
 uint8_t* b_canvas;
+
+
+/************************************************************************************************
+ * LOCAL PROTOTYPES
+ ***********************************************************************************************/
+void canvas_DrawFilledRectangle(Canvas* canvas, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t colored);
+void canvas_DrawVerticalLine(Canvas* canvas, uint8_t x, uint8_t y, uint8_t line_height, uint8_t colored);
+
+/************************************************************************************************
+ * GLOBAL FUNCTIONS
+ ***********************************************************************************************/
 
 Canvas_error Canvas_Init(Canvas* canvas, uint16_t width, uint16_t height) {
 	// Allocate memory for the buffer canvas depending on display size
@@ -25,13 +43,14 @@ Canvas_error Canvas_Init(Canvas* canvas, uint16_t width, uint16_t height) {
 }
 
 // Responsible for taking the software filter set model and updating the EPD
-void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t *currentFilters){
+void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t *currentFilters, uint8_t invPosition) {
 // This draws the filter names based on the position stored in the filter model
 // It also recognizes longer names and splits them up into 2 lines
 // It also keeps track of how many times the screen has been refreshed
 	// If it has been refreshed 5+ times, perform a full refresh
+// invPosition inverts the color/filter name on a specific position. 0 = no invert, >0 = position is inverted
 
-// At some point, this will need to know how many filter slots are installed and draw the canvas correctly
+// TODO - Find out how many filter slots are installed and draw the canvas correctly
 
 	uint8_t tmpName[10] = {0};
 	uint8_t nameLen;
@@ -47,6 +66,21 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 	//Start with a clear BG
 	canvas_setBGImage(canvas, image_background);
 	canvas_DrawStringAt(canvas, 10, 3, "FILTERS", &Font16, 1);
+
+	// If a position is inverted, draw a filled rectangle in that position
+	if (invPosition > 0) {
+		switch (invPosition) {
+			case 1:
+				canvas_DrawFilledRectangle(canvas, 2, 19, 93, 75, false);
+				break;
+			case 2:
+				canvas_DrawFilledRectangle(canvas, 2, 82, 93, 137, false);
+				break;
+			case 3:
+				canvas_DrawFilledRectangle(canvas, 2, 144, 93, 198, false);
+				break;
+		}
+	}
 
 	// Loop through all filter stages
 	for (uint8_t filterStage = 1; filterStage <= FILTER_SECTION_SIZE; filterStage++){
@@ -80,8 +114,8 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 					startPixelX = epd->lines_per_display / 2;	// Find the center of the line
 					startPixelX -= (nameLen * 17) / 2;			// difference of the center of text and center of line
 
-					// Draw text
-					canvas_DrawStringAt(canvas, startPixelX, startPixelY, tmpName, &Font24, 0);
+					// Draw Text
+					canvas_DrawStringAt(canvas, startPixelX, startPixelY, tmpName, &Font24, filterStage == invPosition ? 1 : 0);
 
 				} else {
 					// Need to split into 2 rows
@@ -107,13 +141,13 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 //					startPixelX -= (nameLen * 17) / 2;			// difference of the center of text and center of line
 
 					// Draw text
-					canvas_DrawStringAt(canvas, 6, startPixelY, topLine, &Font24, 0);
+					canvas_DrawStringAt(canvas, 6, startPixelY, topLine, &Font24, filterStage == invPosition ? 1 : 0);
 
 //					// Find the staring X pixel
 //					startPixelX = epd->lines_per_display / 2;	// Find the center of the line
 //					startPixelX -= (nameLen * 17) / 2;			// difference of the center of text and center of line
 
-					canvas_DrawStringAt(canvas, 6, startPixelY + 24, botLine, &Font24, 0);
+					canvas_DrawStringAt(canvas, 6, startPixelY + 24, botLine, &Font24, filterStage == invPosition ? 1 : 0);
 				}
 			}
 		}
@@ -123,10 +157,10 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 	// Right now, it just does a complete refresh - Need to change in the future
 	// Print the rendered image
 	if (refreshCount < CYCLES_UNTIL_REFRESH){
-		EPD_set_enable_temperature();
 		canvas_UpdateEPD(canvas, epd, prevImage);
 		refreshCount++;
 	} else {
+		EPD_set_enable_temperature();
 		canvas_PrintEPD(canvas, epd);
 		refreshCount = 0;
 	}
@@ -296,5 +330,41 @@ void canvas_UpdateEPD(Canvas* canvas, EPD_HandleTypeDef* epd, uint8_t* old_img){
 	EPD_partial_image(epd, old_img, canvas->image);
 	EPD_end(epd);
 }
+
+/************************************************************************************************
+ * LOCAL FUNCTIONS
+ ***********************************************************************************************/
+
+/**
+*  @brief: this draws a filled rectangle
+*/
+void canvas_DrawFilledRectangle(Canvas* canvas, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t colored) {
+    int min_x, min_y, max_x, max_y;
+    int i;
+    min_x = x1 > x0 ? x0 : x1;
+    max_x = x1 > x0 ? x1 : x0;
+    min_y = y1 > y0 ? y0 : y1;
+    max_y = y1 > y0 ? y1 : y0;
+
+    for (i = min_x; i <= max_x; i++) {
+      canvas_DrawVerticalLine(canvas, i, min_y, max_y - min_y + 1, colored);
+    }
+}
+
+
+/**
+*  @brief: this draws a vertical line on the frame buffer
+*/
+void canvas_DrawVerticalLine(Canvas* canvas, uint8_t x, uint8_t y, uint8_t line_height, uint8_t colored) {
+    int i;
+    for (i = y; i < y + line_height; i++) {
+        canvas_DrawPixel(canvas, x, i, colored);
+    }
+}
+
+
+
+
+
 
 

@@ -275,7 +275,6 @@ void EXTI15_10_IRQHandler(void)
 
 	// Check Pin States
 	if (HAL_GPIO_ReadPin(B_INPUT1_GPIO_Port, B_INPUT1_Pin) == GPIO_PIN_SET) {
-		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
 		// Button 1 Initial Press
 		btn1flag = 1;
 		tickStart = HAL_GetTick();
@@ -298,7 +297,6 @@ void EXTI15_10_IRQHandler(void)
 		if (HAL_GPIO_ReadPin(B_INPUT1_GPIO_Port, B_INPUT1_Pin) == GPIO_PIN_RESET) {
 			// Button 1 was released
 			tickEnd = HAL_GetTick();
-			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
 		}
 	}
 	if (btn2flag) {
