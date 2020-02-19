@@ -18,6 +18,8 @@
 #include "st_errno.h"
 
 #include "rfal_analogConfig.h"
+#include "st25r3916/st25r3916_aat.h"
+#include "rfal_rf.h"
 
 
 /* *****************************************************************************
@@ -41,12 +43,16 @@ static iso15693ProximityCard_t cards[FILTER_SECTION_SIZE];
  *******************************************************************************/
 ReturnCode rfidControllerInit(void) {
 	ReturnCode err = ERR_NONE;
+	struct st25r3916AatTuneResult tuningStatus;
 
 	rfalAnalogConfigInitialize();                                                     /* Initialize RFAL's Analog Configs */
 
 	if ((err = rfalInitialize()) == ERR_NONE) {
 		rfidInitialized = true;
 	}
+
+	err = st25r3916AatTune(NULL, &tuningStatus);
+
 	return err;
 }
 
@@ -99,7 +105,42 @@ ReturnCode checkFilterTags(detectedTags_t *dTags) {
 	return err;
 }
 
+ReturnCode startWakeUpMode(void) {
+	rfalWakeUpConfig wkupConfig;
 
+	// Set up the Wake Up Configuration
+	wkupConfig.period = RFAL_WUM_PERIOD_100MS;
+	wkupConfig.irqTout = false;
+	wkupConfig.swTagDetect = true;
+
+	// Inductive Amplitude Wake Up
+	wkupConfig.indAmp.enabled = false;
+	wkupConfig.indAmp.delta = 1;
+	wkupConfig.indAmp.reference = RFAL_WUM_REFERENCE_AUTO;
+	wkupConfig.indAmp.autoAvg = true;
+	wkupConfig.indAmp.aaInclMeas = true;
+	wkupConfig.indAmp.aaWeight = RFAL_WUM_AA_WEIGHT_16;
+
+	// Inductive Phase Wake Up - Disabled
+	wkupConfig.indPha.enabled = true;
+	wkupConfig.indPha.delta = 4;
+	wkupConfig.indPha.reference = RFAL_WUM_REFERENCE_AUTO;
+	wkupConfig.indPha.autoAvg = true;
+	wkupConfig.indPha.aaInclMeas = true;
+	wkupConfig.indPha.aaWeight = RFAL_WUM_AA_WEIGHT_8;
+
+//	// Capacitive Wake Up - Disabled
+	wkupConfig.cap.enabled = false;
+	wkupConfig.cap.delta = 1;
+	wkupConfig.cap.reference = RFAL_WUM_REFERENCE_AUTO;
+	wkupConfig.cap.autoAvg = true;
+	wkupConfig.cap.aaInclMeas = true;
+	wkupConfig.cap.aaWeight = RFAL_WUM_AA_WEIGHT_16;
+
+	ReturnCode err = rfalWakeUpModeStart(&wkupConfig);
+
+	return err;
+}
 
 /* *****************************************************************************
  * LOCAL FUNCTIONS

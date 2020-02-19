@@ -105,6 +105,10 @@ void Error_Handler(void);
 #define SD_DETECT_EXTI_IRQn EXTI9_5_IRQn
 #define USB_RENUM_Pin GPIO_PIN_8
 #define USB_RENUM_GPIO_Port GPIOA
+#define DBG_OUT_TX_Pin GPIO_PIN_9
+#define DBG_OUT_TX_GPIO_Port GPIOA
+#define DBG_OUT_RX_Pin GPIO_PIN_10
+#define DBG_OUT_RX_GPIO_Port GPIOA
 #define TC_SIGNAL_Pin GPIO_PIN_4
 #define TC_SIGNAL_GPIO_Port GPIOB
 #define AUX_POWER_Pin GPIO_PIN_5

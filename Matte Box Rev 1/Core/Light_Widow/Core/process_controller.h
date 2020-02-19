@@ -25,6 +25,8 @@ typedef enum {
 	NORMAL_OPERATION,
 	CHANGE_FILTER_POS,
 	UPDATE_FILTER_NAME,
+	RFID_WAKEUP_MODE,
+	TEST_MODE
 } process_state_t;
 
 typedef enum {

@@ -10,6 +10,11 @@
 /*******************************************************************************
  * INCLUDES
  *******************************************************************************/
+//TESTING ONLY!!!
+#include <string.h>
+#include "usbd_cdc_if.h"
+#include "st25r3916/st25r3916.h"
+
 #include "fatfs.h"
 
 #include "process_controller.h"			/* Process Controller		*/
@@ -23,6 +28,8 @@
 #include "BQ27441.h"					/* Gas Gauge				*/
 #include "lm75b.h"						/* Temperature Sensor		*/
 #include "rtc.h"						/* Real Time Clock			*/
+
+#include "rfal_rf.h"					/* RFAL Worker				*/
 
 /*******************************************************************************
  * LOCAL DEFINES
@@ -109,13 +116,24 @@ void setupIOs(void){
 void processIOs(void) {
 	filterSectionStatus_t filterStatus;
 
+//TESTING ONLY!
+	uint8_t ampMeas, phsMeas;
+	char tmpStr[30];
+
 	while (1) {
+
+//		HAL_GPIO_WritePin(DBG_OUT_TX_GPIO_Port, DBG_OUT_TX_Pin, 0);
+//		HAL_GPIO_WritePin(DBG_OUT_RX_GPIO_Port, DBG_OUT_RX_Pin, 0);
+
+		// Keep the RFAL Happy
+		rfalWorker();
 
 		// Check ISR events
 		checkISREvents();
 
 		switch (processState) {
 			case NORMAL_OPERATION:
+
 				// Check on the CLI to see if any new commands are present
 				//checkCliStatus();
 
@@ -145,7 +163,14 @@ void processIOs(void) {
 				}
 
 				// TODO -  Go to sleep here
-				//gotoSleep();
+				// Set the RFID Chip into Wake Up Mode
+//				ReturnCode err = startWakeUpMode();
+//				if (err == ERR_NONE) {
+//					processState = RFID_WAKEUP_MODE;
+//				}
+
+//				gotoSleep();
+//				SystemClock_Config();
 
 				HAL_Delay(500);
 				break;
@@ -166,6 +191,25 @@ void processIOs(void) {
 
 				// Place Holder
 				processState = NORMAL_OPERATION;
+				break;
+
+			case RFID_WAKEUP_MODE:
+				// Handle an external wake up from the RFID chip
+				if (rfalWakeUpModeHasWoke()){
+					rfalWakeUpModeStop();
+					processState = NORMAL_OPERATION;
+					CDC_Transmit_FS("INTERRUPT\r\n", 11);
+				}
+				break;
+			case TEST_MODE:
+
+				st25r3916MeasureAmplitude(&ampMeas);
+				st25r3916MeasurePhase(&phsMeas);
+
+				sprintf(tmpStr, "Amplitude: %d, Phase: %d\r\n", ampMeas, phsMeas);
+
+				CDC_Transmit_FS(tmpStr, strlen((char *)tmpStr));
+				HAL_Delay(100);
 				break;
 		}
 	}
@@ -192,6 +236,8 @@ void checkISREvents(void) {
 		if (isr_flags & BTN_1_SH_PRESS) {
 			// Button 1 was short pressed.
 			switch (processState) {
+				case RFID_WAKEUP_MODE:
+					// TODO - Disable IRQs during the button handling events???
 				case NORMAL_OPERATION:
 					// Ensure the filter position actually has something in it
 					posFound = false;
@@ -260,12 +306,16 @@ void checkISREvents(void) {
 
 				case UPDATE_FILTER_NAME:
 					break;
+				case RFID_WAKEUP_MODE:
+					break;
 			}
 		}
 
 		if (isr_flags & BTN_2_SH_PRESS) {
 			// Button 2 was short pressed. Update state to Change Filter Position
 			switch (processState) {
+				case RFID_WAKEUP_MODE:
+				// TODO - Disable IRQs during the button handling events???
 				case NORMAL_OPERATION:
 					// Ensure the filter position actually has something in it
 					posFound = false;
@@ -332,12 +382,16 @@ void checkISREvents(void) {
 
 				case UPDATE_FILTER_NAME:
 					break;
+				case RFID_WAKEUP_MODE:
+					break;
 			}
 		}
 
 		if (isr_flags & BTN_3_SH_PRESS) {
 			// Button 3 was short pressed. Update state to Change Filter Position
 			switch (processState) {
+				case RFID_WAKEUP_MODE:
+				// TODO - Disable IRQs during the button handling events???
 				case NORMAL_OPERATION:
 					// Ensure the filter position actually has something in it
 					posFound = false;
@@ -403,6 +457,8 @@ void checkISREvents(void) {
 
 				case UPDATE_FILTER_NAME:
 					break;
+				case RFID_WAKEUP_MODE:
+					break;
 			}
 		}
 
@@ -437,13 +493,20 @@ void changeFilterPosition(uint8_t firstBtn, uint8_t secondBtn) {
 			slotIndex[j] = i;
 		}
 	}
+
 	// FYI. slotIndex is the place holder for the fSection.filter index. EG -> It is to be used within fSection.filter[slotIndex]
 
 	// Now, we have a slotIndex that is referencing the proper filter order and we just need to reposition the filters now:
 	// 1st button pressed goes to 2nd button slot
-	fSection.filter[slotIndex[firstBtn - 1]].position = secondBtn;
+	// Check to see if there is a tag in the position
+	if (fSection.filter[slotIndex[firstBtn - 1]].position > 0) {
+		fSection.filter[slotIndex[firstBtn - 1]].position = secondBtn;
+	}
+
 	// 2nd button pressed goes to 1st button slot
-	fSection.filter[slotIndex[secondBtn - 1]].position = firstBtn;
+	if (fSection.filter[slotIndex[secondBtn - 1]].position > 0) {
+		fSection.filter[slotIndex[secondBtn - 1]].position = firstBtn;
+	}
 }
 
 

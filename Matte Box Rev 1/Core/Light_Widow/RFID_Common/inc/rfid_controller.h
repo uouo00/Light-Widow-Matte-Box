@@ -32,5 +32,6 @@ typedef struct {
  *******************************************************************************/
 ReturnCode rfidControllerInit(void);
 ReturnCode checkFilterTags(detectedTags_t *dTags);
+ReturnCode startWakeUpMode(void);
 
 #endif // RFID_CONTROLLER_H_

@@ -162,7 +162,7 @@ extern uint8_t globalCommProtectCnt;                      /* Global Protection C
 */
 
 #define RFAL_FEATURE_LISTEN_MODE               false                   /*!< Enable/Disable RFAL support for Listen Mode                               */
-#define RFAL_FEATURE_WAKEUP_MODE               false                   /*!< Enable/Disable RFAL support for the Wake-Up mode                          */
+#define RFAL_FEATURE_WAKEUP_MODE               true                   /*!< Enable/Disable RFAL support for the Wake-Up mode                          */
 #define RFAL_FEATURE_NFCA                      false                  /*!< Enable/Disable RFAL support for NFC-A (ISO14443A)                         */
 #define RFAL_FEATURE_NFCB                      false                   /*!< Enable/Disable RFAL support for NFC-B (ISO14443B)                         */
 #define RFAL_FEATURE_NFCF                      false                   /*!< Enable/Disable RFAL support for NFC-F (FeliCa)                            */
