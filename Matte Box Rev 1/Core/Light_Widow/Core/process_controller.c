@@ -122,9 +122,6 @@ void processIOs(void) {
 
 	while (1) {
 
-//		HAL_GPIO_WritePin(DBG_OUT_TX_GPIO_Port, DBG_OUT_TX_Pin, 0);
-//		HAL_GPIO_WritePin(DBG_OUT_RX_GPIO_Port, DBG_OUT_RX_Pin, 0);
-
 		// Keep the RFAL Happy
 		rfalWorker();
 
@@ -162,12 +159,11 @@ void processIOs(void) {
 						break;
 				}
 
-				// TODO -  Go to sleep here
 				// Set the RFID Chip into Wake Up Mode
-//				ReturnCode err = startWakeUpMode();
-//				if (err == ERR_NONE) {
-//					processState = RFID_WAKEUP_MODE;
-//				}
+				ReturnCode err = startWakeUpMode();
+				if (err == ERR_NONE) {
+					processState = RFID_WAKEUP_MODE;
+				}
 
 //				gotoSleep();
 //				SystemClock_Config();
@@ -180,7 +176,7 @@ void processIOs(void) {
 				if (timeoutCtr >= FILTER_POSITION_TIMEOUT) {
 					// Draw stored
 					canvas_DrawFilters(&canvas1, &epd1, &fSection, 0);
-					processState = NORMAL_OPERATION;
+					processState = RFID_WAKEUP_MODE;
 				}
 
 				HAL_Delay(1);
@@ -237,7 +233,7 @@ void checkISREvents(void) {
 			// Button 1 was short pressed.
 			switch (processState) {
 				case RFID_WAKEUP_MODE:
-					// TODO - Disable IRQs during the button handling events???
+					// Fall-through
 				case NORMAL_OPERATION:
 					// Ensure the filter position actually has something in it
 					posFound = false;
@@ -273,12 +269,14 @@ void checkISREvents(void) {
 					}
 					changeFilterPos1 = 0;				// Reset Change Filter Position
 					canvas_DrawFilters(&canvas1, &epd1, &fSection, 0);
-					processState = NORMAL_OPERATION;
+					processState = RFID_WAKEUP_MODE;
 					break;
 
 				case UPDATE_FILTER_NAME:
 					// This button is reserved as "up". Change the list focus.
 					// If the top slot is selected, load new page
+					break;
+				case TEST_MODE:
 					break;
 			}
 		}
@@ -301,12 +299,14 @@ void checkISREvents(void) {
 					}
 					changeFilterPos1 = 0;				// Reset Change Filter Position
 					canvas_DrawFilters(&canvas1, &epd1, &fSection, 0);
-					processState = NORMAL_OPERATION;
+					processState = RFID_WAKEUP_MODE;
 					break;
 
 				case UPDATE_FILTER_NAME:
 					break;
 				case RFID_WAKEUP_MODE:
+					break;
+				case TEST_MODE:
 					break;
 			}
 		}
@@ -315,7 +315,7 @@ void checkISREvents(void) {
 			// Button 2 was short pressed. Update state to Change Filter Position
 			switch (processState) {
 				case RFID_WAKEUP_MODE:
-				// TODO - Disable IRQs during the button handling events???
+				// Fall-through
 				case NORMAL_OPERATION:
 					// Ensure the filter position actually has something in it
 					posFound = false;
@@ -351,10 +351,12 @@ void checkISREvents(void) {
 					}
 					changeFilterPos1 = 0;				// Reset Change Filter Position
 					canvas_DrawFilters(&canvas1, &epd1, &fSection, 0);
-					processState = NORMAL_OPERATION;
+					processState = RFID_WAKEUP_MODE;
 					break;
 
 				case UPDATE_FILTER_NAME:
+					break;
+				case TEST_MODE:
 					break;
 			}
 		}
@@ -377,12 +379,14 @@ void checkISREvents(void) {
 					}
 					changeFilterPos1 = 0;				// Reset Change Filter Position
 					canvas_DrawFilters(&canvas1, &epd1, &fSection, 0);
-					processState = NORMAL_OPERATION;
+					processState = RFID_WAKEUP_MODE;
 					break;
 
 				case UPDATE_FILTER_NAME:
 					break;
 				case RFID_WAKEUP_MODE:
+					break;
+				case TEST_MODE:
 					break;
 			}
 		}
@@ -391,7 +395,7 @@ void checkISREvents(void) {
 			// Button 3 was short pressed. Update state to Change Filter Position
 			switch (processState) {
 				case RFID_WAKEUP_MODE:
-				// TODO - Disable IRQs during the button handling events???
+				// Fall-through
 				case NORMAL_OPERATION:
 					// Ensure the filter position actually has something in it
 					posFound = false;
@@ -426,10 +430,12 @@ void checkISREvents(void) {
 					}
 					changeFilterPos1 = 0;				// Reset Change Filter Position
 					canvas_DrawFilters(&canvas1, &epd1, &fSection, 0);
-					processState = NORMAL_OPERATION;
+					processState = RFID_WAKEUP_MODE;
 					break;
 
 				case UPDATE_FILTER_NAME:
+					break;
+				case TEST_MODE:
 					break;
 			}
 		}
@@ -452,12 +458,14 @@ void checkISREvents(void) {
 					}
 					changeFilterPos1 = 0;				// Reset Change Filter Position
 					canvas_DrawFilters(&canvas1, &epd1, &fSection, 0);
-					processState = NORMAL_OPERATION;
+					processState = RFID_WAKEUP_MODE;
 					break;
 
 				case UPDATE_FILTER_NAME:
 					break;
 				case RFID_WAKEUP_MODE:
+					break;
+				case TEST_MODE:
 					break;
 			}
 		}
