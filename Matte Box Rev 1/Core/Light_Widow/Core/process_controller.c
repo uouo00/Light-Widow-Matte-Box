@@ -119,6 +119,7 @@ void processIOs(void) {
 //TESTING ONLY!
 	uint8_t ampMeas, phsMeas;
 	char tmpStr[30];
+	int8_t tmpTemp;
 
 	while (1) {
 
@@ -199,13 +200,18 @@ void processIOs(void) {
 				break;
 			case TEST_MODE:
 
-				st25r3916MeasureAmplitude(&ampMeas);
-				st25r3916MeasurePhase(&phsMeas);
+//				st25r3916MeasureAmplitude(&ampMeas);
+//				st25r3916MeasurePhase(&phsMeas);
+//
+//				sprintf(tmpStr, "Amplitude: %d, Phase: %d\r\n", ampMeas, phsMeas);
+//
+//				CDC_Transmit_FS(tmpStr, strlen((char *)tmpStr));
+//				HAL_Delay(100);
 
-				sprintf(tmpStr, "Amplitude: %d, Phase: %d\r\n", ampMeas, phsMeas);
-
+				LM75B_ReadTemp(&tmpTemp);
+				sprintf(tmpStr, "Temperature: %d\r\n", tmpTemp);
 				CDC_Transmit_FS(tmpStr, strlen((char *)tmpStr));
-				HAL_Delay(100);
+
 				break;
 		}
 	}

@@ -24,6 +24,7 @@ uint16_t LM75BPowerPin;				// Pin for the Auxiliary Components power enable
 I2C_HandleTypeDef *pi2c = 0;		// I2C Handle
 bool LM75BInitialized = false;		// Initialized Flag
 
+
 /******************************************************************************
  * PRIVATE PROTOTYPES
  *******************************************************************************/
@@ -67,7 +68,7 @@ LM75B_error LM75B_ReadTemp(int8_t *temp) {
 	}
 
 	HAL_GPIO_WritePin(LM75BPowerPort, LM75BPowerPin, GPIO_PIN_SET);
-	HAL_Delay(10); // Small delay to ensure stable power
+	HAL_Delay(50); // Small delay to ensure stable power and to allow LM75B to acquire a temp reading
 
 	// Read the temperature register
 	uint8_t tempReg[2] = {0};

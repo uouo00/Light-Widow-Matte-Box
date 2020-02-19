@@ -153,8 +153,6 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 		}
 	}
 
-
-	// Right now, it just does a complete refresh - Need to change in the future
 	// Print the rendered image
 	if (refreshCount < CYCLES_UNTIL_REFRESH){
 		canvas_UpdateEPD(canvas, epd, prevImage);
@@ -164,8 +162,6 @@ void canvas_DrawFilters(Canvas* canvas, EPD_HandleTypeDef* epd, filterSection_t 
 		canvas_PrintEPD(canvas, epd);
 		refreshCount = 0;
 	}
-
-
 }
 
 void canvas_SetRotate(Canvas* canvas, uint8_t rotate) {

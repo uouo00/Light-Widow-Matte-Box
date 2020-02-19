@@ -83,7 +83,9 @@ filterSectionStatus_t updateFilterSection(detectedTags_t *dTag, filterSection_t 
 			if (memcmp(dTag->filterTags[detectedTag].tagUID, tempZero, 8) != 0){
 				// A new filter has been installed.
 				bool stageEmpty; // Holder for the empty stage
+				bool filterEmpty; // Holder for the empty filter position
 				uint8_t stagePos;
+				uint8_t filterPos;
 
 				// Check the name to see if it isn't all zero's
 				if (memcmp(dTag->filterTags[detectedTag].tagName, tempZero, 10) != 0){
@@ -103,11 +105,26 @@ filterSectionStatus_t updateFilterSection(detectedTags_t *dTag, filterSection_t 
 						}
 					}
 
+					// There is a scenario where the first position in currentFilters is taken, but assigned to a different slot
+					// Find the first open position in currentFilters to prevent overwriting a tag
+					for (filterPos = 0; filterPos < FILTER_SECTION_SIZE; filterPos++) {
+						filterEmpty = true;	// Assume there's nothing in the filter position
+						if (memcmp(currentFilters->filter[filterPos].filterTagUID, tempZero, 10) != 0) {
+							// Something is in the filter position
+							filterEmpty = false;
+						}
+
+						if (filterEmpty) {
+							// Found an empty position in currentFilters - OK to write into this position.
+							break;
+						}
+					}
+
 					// The first open stage is stored in stagePos
 					// Write the new UID, Name, and Position
-					memcpy(currentFilters->filter[stagePos].filterTagUID, dTag->filterTags[detectedTag].tagUID, 8);
-					memcpy(currentFilters->filter[stagePos].filterName, dTag->filterTags[detectedTag].tagName, 10);
-					currentFilters->filter[stagePos].position = stagePos + 1;
+					memcpy(currentFilters->filter[filterPos].filterTagUID, dTag->filterTags[detectedTag].tagUID, 8);
+					memcpy(currentFilters->filter[filterPos].filterName, dTag->filterTags[detectedTag].tagName, 10);
+					currentFilters->filter[filterPos].position = stagePos + 1;
 					status = FILTER_INSTALLED;
 				} else {
 					// The name is unknown
