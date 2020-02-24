@@ -111,7 +111,7 @@ ReturnCode startWakeUpMode(void) {
 	// Set up the Wake Up Configuration
 	wkupConfig.period = RFAL_WUM_PERIOD_100MS;
 	wkupConfig.irqTout = false;
-	wkupConfig.swTagDetect = true;
+	wkupConfig.swTagDetect = false;
 
 	// Inductive Amplitude Wake Up
 	wkupConfig.indAmp.enabled = false;

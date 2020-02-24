@@ -43,7 +43,8 @@ extern SPI_HandleTypeDef hspi2;
 
 extern I2C_HandleTypeDef hi2c1;
 
-static process_state_t processState = NORMAL_OPERATION;
+static process_state_t processState = TEST_MODE;
+//static process_state_t processState = NORMAL_OPERATION;
 
 /* EPD  ----------------------------------------------------------------------*/
 EPD_HandleTypeDef epd1;					/* EPD Handle Type					  */
@@ -187,7 +188,7 @@ void processIOs(void) {
 			case UPDATE_FILTER_NAME:
 
 				// Place Holder
-				processState = NORMAL_OPERATION;
+				processState = RFID_WAKEUP_MODE;
 				break;
 
 			case RFID_WAKEUP_MODE:
@@ -198,20 +199,16 @@ void processIOs(void) {
 					CDC_Transmit_FS("INTERRUPT\r\n", 11);
 				}
 				break;
+
 			case TEST_MODE:
 
-//				st25r3916MeasureAmplitude(&ampMeas);
-//				st25r3916MeasurePhase(&phsMeas);
-//
-//				sprintf(tmpStr, "Amplitude: %d, Phase: %d\r\n", ampMeas, phsMeas);
-//
-//				CDC_Transmit_FS(tmpStr, strlen((char *)tmpStr));
-//				HAL_Delay(100);
+				st25r3916MeasureAmplitude(&ampMeas);
+				st25r3916MeasurePhase(&phsMeas);
 
-				LM75B_ReadTemp(&tmpTemp);
-				sprintf(tmpStr, "Temperature: %d\r\n", tmpTemp);
+				sprintf(tmpStr, "Amplitude: %d, Phase: %d\r\n", ampMeas, phsMeas);
+
 				CDC_Transmit_FS(tmpStr, strlen((char *)tmpStr));
-
+				HAL_Delay(100);
 				break;
 		}
 	}
@@ -222,7 +219,6 @@ void processIOs(void) {
  *******************************************************************************/
 void checkISREvents(void) {
 	bool posFound;
-//	int8_t slotIndex[FILTER_SECTION_SIZE] = {-1};
 
 	if (isr_flags > 0){
 		if (isr_flags & INIT_FAT_FS) {
@@ -282,6 +278,7 @@ void checkISREvents(void) {
 					// This button is reserved as "up". Change the list focus.
 					// If the top slot is selected, load new page
 					break;
+
 				case TEST_MODE:
 					break;
 			}
@@ -290,7 +287,11 @@ void checkISREvents(void) {
 		if (isr_flags & BTN_1_LG_PRESS) {
 			// Button 1 was long pressed. Update state to Update Filter Name
 			switch (processState) {
+				case RFID_WAKEUP_MODE:
+					// Fall-through
 				case NORMAL_OPERATION:
+					// Re-assign Filter Name
+					processState = UPDATE_FILTER_NAME;
 					break;
 
 				case CHANGE_FILTER_POS:
@@ -310,8 +311,7 @@ void checkISREvents(void) {
 
 				case UPDATE_FILTER_NAME:
 					break;
-				case RFID_WAKEUP_MODE:
-					break;
+
 				case TEST_MODE:
 					break;
 			}
@@ -321,7 +321,7 @@ void checkISREvents(void) {
 			// Button 2 was short pressed. Update state to Change Filter Position
 			switch (processState) {
 				case RFID_WAKEUP_MODE:
-				// Fall-through
+					// Fall-through
 				case NORMAL_OPERATION:
 					// Ensure the filter position actually has something in it
 					posFound = false;
@@ -361,7 +361,10 @@ void checkISREvents(void) {
 					break;
 
 				case UPDATE_FILTER_NAME:
+					// This button is reserved as "enter".
+					// Write the selected list name to Tag.
 					break;
+
 				case TEST_MODE:
 					break;
 			}
@@ -370,7 +373,11 @@ void checkISREvents(void) {
 		if (isr_flags & BTN_2_LG_PRESS) {
 			// Button 2 was long pressed. Update state to Update Filter Name
 			switch (processState) {
+				case RFID_WAKEUP_MODE:
+					// Fall-through
 				case NORMAL_OPERATION:
+					// Re-assign Filter Name
+					processState = UPDATE_FILTER_NAME;
 					break;
 
 				case CHANGE_FILTER_POS:
@@ -390,8 +397,7 @@ void checkISREvents(void) {
 
 				case UPDATE_FILTER_NAME:
 					break;
-				case RFID_WAKEUP_MODE:
-					break;
+
 				case TEST_MODE:
 					break;
 			}
@@ -401,7 +407,7 @@ void checkISREvents(void) {
 			// Button 3 was short pressed. Update state to Change Filter Position
 			switch (processState) {
 				case RFID_WAKEUP_MODE:
-				// Fall-through
+					// Fall-through
 				case NORMAL_OPERATION:
 					// Ensure the filter position actually has something in it
 					posFound = false;
@@ -440,7 +446,10 @@ void checkISREvents(void) {
 					break;
 
 				case UPDATE_FILTER_NAME:
+					// This button is reserved as "down". Change the list focus.
+					// If the bottom slot is selected, load new page
 					break;
+
 				case TEST_MODE:
 					break;
 			}
@@ -449,7 +458,11 @@ void checkISREvents(void) {
 		if (isr_flags & BTN_3_LG_PRESS) {
 			// Button 3 was long pressed. Update state to Update Filter Name
 			switch (processState) {
+				case RFID_WAKEUP_MODE:
+					// Fall-through
 				case NORMAL_OPERATION:
+					// Re-assign Filter Name
+					processState = UPDATE_FILTER_NAME;
 					break;
 
 				case CHANGE_FILTER_POS:
@@ -469,8 +482,7 @@ void checkISREvents(void) {
 
 				case UPDATE_FILTER_NAME:
 					break;
-				case RFID_WAKEUP_MODE:
-					break;
+
 				case TEST_MODE:
 					break;
 			}
